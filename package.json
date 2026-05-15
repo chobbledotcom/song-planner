@@ -1,0 +1,15 @@
+{
+  "name": "guitar-song-planner",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "build": "vite build && node scripts/inline-build.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vite": "^5.2.0"
+  }
+}

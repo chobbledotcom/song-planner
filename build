@@ -1,0 +1,16 @@
+#!/usr/bin/env nix-shell
+#!nix-shell -i bash -p nodejs_22 pnpm
+
+set -euo pipefail
+
+cd "$(dirname "$0")"
+
+if [ -f pnpm-lock.yaml ]; then
+  pnpm install --frozen-lockfile
+else
+  pnpm install
+fi
+
+pnpm run build
+
+echo "Build complete: dist/song-planner.html"
