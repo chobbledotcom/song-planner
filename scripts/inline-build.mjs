@@ -3,14 +3,14 @@ import path from "node:path";
 
 async function inlineBuild() {
   const inputHtmlPath = path.resolve("dist/index.html");
-  const outputHtmlPath = path.resolve("dist/song-planner.html");
-  await inlineAssets(inputHtmlPath, outputHtmlPath);
+  const outputHtmlPath = path.resolve("dist/index.html");
+  const html = fs.readFileSync(inputHtmlPath, "utf-8");
+  const inlined = await inlineAssetsInMemory(html, path.dirname(inputHtmlPath));
+  fs.writeFileSync(outputHtmlPath, inlined, "utf-8");
+  assertSingleFileHtml(inlined);
 }
 
-async function inlineAssets(inputHtmlPath, outputHtmlPath) {
-  let html = fs.readFileSync(inputHtmlPath, "utf-8");
-
-  // Inline CSS links
+async function inlineAssetsInMemory(html, baseDir) {
   const linkRegex = /<link[^>]+rel=["']stylesheet["'][^>]*>/g;
   let match;
   const linksToReplace = [];
@@ -24,7 +24,7 @@ async function inlineAssets(inputHtmlPath, outputHtmlPath) {
 
   function resolveAsset(rel) {
     const clean = rel.startsWith("/") ? rel.slice(1) : rel;
-    return path.resolve(path.dirname(inputHtmlPath), clean);
+    return path.resolve(baseDir, clean);
   }
 
   for (const { tag, href } of linksToReplace) {
@@ -33,7 +33,6 @@ async function inlineAssets(inputHtmlPath, outputHtmlPath) {
     html = html.replace(tag, `<style>\n${css}\n</style>`);
   }
 
-  // Inline script src
   const scriptRegex = /<script[^>]*src=["']([^"']+)["'][^>]*><\/script>/g;
   const scriptsToReplace = [];
   while ((match = scriptRegex.exec(html)) !== null) {
@@ -46,8 +45,7 @@ async function inlineAssets(inputHtmlPath, outputHtmlPath) {
     html = html.replace(tag, `<script type="module">\n${js}\n</script>`);
   }
 
-  fs.writeFileSync(outputHtmlPath, html, "utf-8");
-  assertSingleFileHtml(html);
+  return html;
 }
 
 function assertSingleFileHtml(html) {
